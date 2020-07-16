@@ -7,3 +7,5 @@
 /interface/build
 /interface/node_modules
 .vscode
+
+lib/ugfx/

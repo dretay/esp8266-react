@@ -1,6 +1,8 @@
 #include <ESP8266React.h>
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
+#include <alarmclock/AlarmService.h>
+#include <FS.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -12,6 +14,9 @@ LightStateService lightStateService = LightStateService(&server,
                                                         esp8266React.getSecurityManager(),
                                                         esp8266React.getMqttClient(),
                                                         &lightMqttSettingsService);
+AlarmService alarmService = AlarmService(&server, &SPIFFS,
+                                                        esp8266React.getSecurityManager());
+HardwareSerial dfplayerUart(1);
 
 void setup() {
   // start serial and filesystem
@@ -22,6 +27,9 @@ void setup() {
 
   // load the initial light settings
   lightStateService.begin();
+  
+  // load the initial alarm settings
+  alarmService.begin();
 
   // start the light service
   lightMqttSettingsService.begin();
@@ -33,4 +41,6 @@ void setup() {
 void loop() {
   // run the framework's loop function
   esp8266React.loop();
+  alarmService.loop();  
 }
+
