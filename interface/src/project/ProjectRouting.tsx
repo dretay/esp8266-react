@@ -5,6 +5,7 @@ import { PROJECT_PATH } from '../api';
 import { AuthenticatedRoute } from '../authentication';
 
 import DemoProject from './DemoProject';
+import AlarmClock from './AlarmClock';
 
 class ProjectRouting extends Component {
 
@@ -16,6 +17,7 @@ class ProjectRouting extends Component {
           * Add your project page routing below.
           */
         }
+        <AuthenticatedRoute exact path={`/${PROJECT_PATH}/alarmclock/*`} component={AlarmClock} />
         <AuthenticatedRoute exact path={`/${PROJECT_PATH}/demo/*`} component={DemoProject} />
         {
           /*

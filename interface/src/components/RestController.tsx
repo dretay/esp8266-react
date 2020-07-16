@@ -72,7 +72,7 @@ export function restController<D, P extends RestControllerProps<D>>(endpointUrl:
 
       saveData = () => {
         this.setState({ loading: true });
-        redirectingAuthorizedFetch(endpointUrl, {
+        return redirectingAuthorizedFetch(endpointUrl, {
           method: 'POST',
           body: JSON.stringify(this.state.data),
           headers: {

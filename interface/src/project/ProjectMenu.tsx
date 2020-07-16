@@ -16,7 +16,13 @@ class ProjectMenu extends Component<RouteComponentProps> {
           <ListItemIcon>
             <SettingsRemoteIcon />
           </ListItemIcon>
-          <ListItemText primary="Demo Project" />
+          <ListItemText primary="Demo Project Poop" />
+        </ListItem>
+        <ListItem to={`/${PROJECT_PATH}/alarmclock/`} selected={path.startsWith(`/${PROJECT_PATH}/alarmclock/`)} button component={Link}>
+          <ListItemIcon>
+            <SettingsRemoteIcon />
+          </ListItemIcon>
+          <ListItemText primary="Alarm Clock" />
         </ListItem>
       </List>
     )
