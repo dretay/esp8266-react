@@ -15,11 +15,12 @@
     #include <ESP8266WiFi.h>
 #endif
 
+
+#include "threads/CThread.h"
+#include "threads/KeypadThread.h"
 #include "threads/VoiceThread.h"
 #include "threads/Mp3Thread.h"
-#include "threads/KeypadThread.h"
 #include "threads/NeopixelThread.h"
-
 
 
 #define ALARM_SETTINGS_FILE "/config/alarmSettings.json"
@@ -67,16 +68,12 @@ class AlarmService : public StatefulService<AlarmSettings> {
   AlarmService(AsyncWebServer* server, FS* fs, SecurityManager* securityManager);
   void begin();
   void loop();
-  void handleInterrupt();
 
  private:
   HttpEndpoint<AlarmSettings> _httpEndpoint;
   FSPersistence<AlarmSettings> _fsPersistence;
   bool alarmTriggered;
   // DFPlayerMini_Fast myMP3;  
-  portMUX_TYPE mux;
-  int numberOfInterrupts;
-  volatile int interruptCounter;
   // AudioOutputI2S *out;
   // Adafruit_NeoPixel strip;
   void colorWipe(uint32_t color, int wait);

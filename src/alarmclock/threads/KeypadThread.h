@@ -1,8 +1,7 @@
-#pragma once
-// look at http://www.atakansarioglu.com/pushme-keypad-reader-for-freertos/
+#pragma once 
 
+#include "CThread.h"
 #include <Arduino.h>
-#include "Thread.h"
 #include <types.h>
 
 #define KEY_TASKDELAY_TIME 5UL
@@ -12,7 +11,6 @@
 #define KEY_LONGPRESS_BOOST_TIME 50UL
 #define KEY_LONGPRESS_BOOST_THRESHOLD 8
 
-//-- Definitions (DONT TOUCH)
 #if configUSE_16_BIT_TICKS == 1
 #define KEY_EVENTBITMASK 0x00FFU
 #define KEY00 0x0001
@@ -43,24 +41,14 @@
 #define KEYLONG 0x8000
 #endif
 
-class KeypadThread : public Thread {
- public:
-  class Keypad {
-   public:
-    uint16_t keysPressed = 0;   // PORT POLLING register
-    uint16_t keysDown = 0;      //
-    uint16_t keysReleased = 0;  //
-    TimerHandle_t timerDebounce;
-    TimerHandle_t timerLong;
-    uint8_t counterBoost = 0;
-  };
-  Keypad keypad;
-  KeypadThread(const uint32_t _stackDepth, UBaseType_t _priority, const char* const _name);
-  void run();
-  void setChannel(int channel);
 
- private:
-  uint16_t keypadSerialize(void);
-  static void keypadDummyTimerCallback(TimerHandle_t xTimer);
-  int currentChannel;
+//-- Extern.
+extern EventGroupHandle_t keypadEventGroup;
+extern QueueHandle_t keypadQueue;
+
+struct keypadThread
+{
+	CThread*(*initialize)(void);	
 };
+
+extern const struct keypadThread KeypadThread;
