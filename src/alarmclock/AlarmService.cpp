@@ -11,48 +11,66 @@ AlarmService::AlarmService(AsyncWebServer* server, FS* fs, SecurityManager* secu
     _fsPersistence(AlarmSettings::read, AlarmSettings::update, this, fs, ALARM_SETTINGS_FILE) {
   alarmTriggered = false;
 }
-void AlarmService::handleInterrupt() {
-  portENTER_CRITICAL_ISR(&mux);
-  interruptCounter++;
-  portEXIT_CRITICAL_ISR(&mux);
-}
+
 #define S0 14
 #define S1 27
 
 extern QueueHandle_t VOICE_QUEUE;
 extern QueueHandle_t MP3_QUEUE;
+
+static CThread* keypadThread;
+
+static void toggleVoiceThread(void* param) {
+  uint32_t keypadValue;
+  while (true) {
+    if (xQueueReceive(keypadQueue, &keypadValue, portMAX_DELAY) && (keypadValue == KEY00)) {
+      Serial.println("Sending voice command...");
+
+      int command = 0;
+      xQueueSend(VOICE_QUEUE, &command, portMAX_DELAY);
+    }
+  }
+}
+static int mp3_command = 0;
+static void toggleMp3Thread(void* param) {
+  uint32_t keypadValue;
+  while (true) {
+    if (xQueueReceive(keypadQueue, &keypadValue, portMAX_DELAY) && (keypadValue == KEY01)) {
+      Serial.println("Sending mp3 command...");
+      xQueueSend(MP3_QUEUE, &mp3_command, portMAX_DELAY);
+      mp3_command++;
+    }
+  }
+}
+
 void AlarmService::begin() {
   Serial.printf_P(PSTR("Begin()\n"));
   _fsPersistence.readFromFS();
 
-  mux = portMUX_INITIALIZER_UNLOCKED;
-
   pinMode(S0, OUTPUT);  // s0
   pinMode(S1, OUTPUT);  // s1
 
-  digitalWrite(S0, HIGH);
+  digitalWrite(S0, LOW);
   digitalWrite(S1, HIGH);
 
-  int command = 0;
+  keypadThread = KeypadThread.initialize();
 
-  //voiceThread Usage (bytes) = 8308
-  VoiceThread voiceThread{10000, 1, "voiceThread"};
+  xTaskCreate(toggleVoiceThread, "toggleVoiceThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
+  xTaskCreate(toggleMp3Thread, "toggleMp3Thread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
+  xTaskCreate(keypadThread->run, "keypadThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 3), NULL);
 
-  Mp3Thread Mp3Thread{10000, 1, "mp3Thread"};
-  // xQueueSend(MP3_QUEUE, &command, portMAX_DELAY);
-
-  KeypadThread KeypadThread{10000, 1, "keypadThread"};
-
-  // // strip = 
-  // // Serial.printf_P(PSTR("largest_free_block: %d\n"),heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-  
-  // NeopixelThread NeopixelThread{1024, 5, "neopixelThread"};
-  
+  // VoiceThread voiceThread{50000, 1, "voiceThread"};
+  // Mp3Thread mp3Thread{10000, 1, "mp3Thread"};
+  // NeopixelThread neopixelThread{1024, 1, "neopixelThread"};
 }
-
-
-
-void AlarmService::loop() {    
+// typedef enum {
+//   TOGGLE_LED_Blue_KEY = (KEY00),
+//   TOGGLE_LED_Green_KEY = (KEY00 | KEYLONG),
+// } tToggleKeys;
+void AlarmService::loop() {
+  // delay(1000);
+  // xEventGroupWaitBits(keypadEventGroup, TOGGLE_LED_Green_KEY, pdTRUE, pdTRUE, 0);
+  // Serial.printf_P(PSTR("Key 0 Pressed"));
 
   // char storedTsHours[3];
   // char storedTsMinutes[3];

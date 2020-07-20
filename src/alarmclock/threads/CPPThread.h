@@ -7,8 +7,9 @@
 
 class Thread {
  public:
+  Thread();
   Thread(const uint32_t _stackDepth, UBaseType_t _priority, const char* const _name);
-  TaskHandle_t* getHandle();
+  TaskHandle_t getHandle();
   virtual void run() = 0;
 
  protected:
