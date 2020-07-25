@@ -17,10 +17,13 @@
 
 
 #include "threads/CThread.h"
-#include "threads/KeypadThread.h"
-#include "threads/VoiceThread.h"
+#include "threads/ButtonThread.h"
 #include "threads/Mp3Thread.h"
 #include "threads/NeopixelThread.h"
+#include "threads/VoiceThread.h"
+
+
+#include "AnalogMux.h"
 
 
 #define ALARM_SETTINGS_FILE "/config/alarmSettings.json"
@@ -73,9 +76,6 @@ class AlarmService : public StatefulService<AlarmSettings> {
   HttpEndpoint<AlarmSettings> _httpEndpoint;
   FSPersistence<AlarmSettings> _fsPersistence;
   bool alarmTriggered;
-  // DFPlayerMini_Fast myMP3;  
-  // AudioOutputI2S *out;
-  // Adafruit_NeoPixel strip;
   void colorWipe(uint32_t color, int wait);
 };
 

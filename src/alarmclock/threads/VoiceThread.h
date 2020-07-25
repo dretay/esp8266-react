@@ -12,14 +12,7 @@
 #include <ESP8266SAM.h>
 #include <time.h>
 
-// class VoiceThread : public Thread {
-//  public:
-//   VoiceThread();
-//   VoiceThread(const uint32_t _stackDepth, UBaseType_t _priority, const char* const _name);
-//   void run();  
-
-//  private:
-// };
+#include "../AnalogMux.h"
 
 struct voiceThread
 {
