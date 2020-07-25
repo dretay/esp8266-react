@@ -12,34 +12,38 @@ AlarmService::AlarmService(AsyncWebServer* server, FS* fs, SecurityManager* secu
   alarmTriggered = false;
 }
 
-#define S0 14
-#define S1 27
-
 extern QueueHandle_t VOICE_QUEUE;
 extern QueueHandle_t MP3_QUEUE;
+extern QueueHandle_t keypadQueue;
+extern EventGroupHandle_t keypadEventGroup;
 
-static CThread* keypadThread;
+static CThread *voiceThread, *mp3Thread, *neopixelThread, *buttonThread;
 
 static void toggleVoiceThread(void* param) {
-  uint32_t keypadValue;
   while (true) {
-    if (xQueueReceive(keypadQueue, &keypadValue, portMAX_DELAY) && (keypadValue == KEY00)) {
-      Serial.println("Sending voice command...");
+    xEventGroupWaitBits(keypadEventGroup, KEY00, pdTRUE, pdTRUE, portMAX_DELAY);
 
-      int command = 0;
-      xQueueSend(VOICE_QUEUE, &command, portMAX_DELAY);
-    }
+    int command = 0;
+    xQueueSend(VOICE_QUEUE, &command, portMAX_DELAY);
   }
 }
 static int mp3_command = 0;
 static void toggleMp3Thread(void* param) {
-  uint32_t keypadValue;
   while (true) {
-    if (xQueueReceive(keypadQueue, &keypadValue, portMAX_DELAY) && (keypadValue == KEY01)) {
-      Serial.println("Sending mp3 command...");
-      xQueueSend(MP3_QUEUE, &mp3_command, portMAX_DELAY);
-      mp3_command++;
-    }
+    xEventGroupWaitBits(keypadEventGroup, KEY01, pdTRUE, pdTRUE, portMAX_DELAY);
+    xQueueSend(MP3_QUEUE, &mp3_command, portMAX_DELAY);
+    mp3_command++;
+  }
+}
+static void memoryWatchdog(void* param) {
+  while (true) {
+    vTaskDelay(pdMS_TO_TICKS(5000));
+    Serial.println("=============Memory Report=============");
+    voiceThread->memoryFree(voiceThread);
+    mp3Thread->memoryFree(mp3Thread);
+    neopixelThread->memoryFree(neopixelThread);
+    buttonThread->memoryFree(buttonThread);
+    Serial.println("=======================================");
   }
 }
 
@@ -47,26 +51,16 @@ void AlarmService::begin() {
   Serial.printf_P(PSTR("Begin()\n"));
   _fsPersistence.readFromFS();
 
-  pinMode(S0, OUTPUT);  // s0
-  pinMode(S1, OUTPUT);  // s1
-
-  digitalWrite(S0, LOW);
-  digitalWrite(S1, HIGH);
-
-  keypadThread = KeypadThread.initialize();
+  voiceThread = VoiceThread.initialize();
+  mp3Thread = Mp3Thread.initialize();
+  neopixelThread = NeopixelThread.initialize();
+  buttonThread = ButtonThread.initialize();
 
   xTaskCreate(toggleVoiceThread, "toggleVoiceThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
   xTaskCreate(toggleMp3Thread, "toggleMp3Thread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
-  xTaskCreate(keypadThread->run, "keypadThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 3), NULL);
-
-  // VoiceThread voiceThread{50000, 1, "voiceThread"};
-  // Mp3Thread mp3Thread{10000, 1, "mp3Thread"};
-  // NeopixelThread neopixelThread{1024, 1, "neopixelThread"};
+  xTaskCreate(memoryWatchdog, "memoryWatchdog", 2048, NULL, (tskIDLE_PRIORITY + 1), NULL);
 }
-// typedef enum {
-//   TOGGLE_LED_Blue_KEY = (KEY00),
-//   TOGGLE_LED_Green_KEY = (KEY00 | KEYLONG),
-// } tToggleKeys;
+
 void AlarmService::loop() {
   // delay(1000);
   // xEventGroupWaitBits(keypadEventGroup, TOGGLE_LED_Green_KEY, pdTRUE, pdTRUE, 0);

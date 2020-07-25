@@ -20,31 +20,23 @@ static void colorWipe(uint32_t color, int wait) {
 }
 
 static void run(void* params) {
-  Serial.printf_P(PSTR("NeopixelThread running...\n"));
-  int i = 0;
   for (;;) {
     colorWipe(strip.Color(255, 0, 0), 50);     // Red
     colorWipe(strip.Color(0, 255, 0), 50);     // Green
     colorWipe(strip.Color(0, 0, 255), 50);     // Blue
     colorWipe(strip.Color(0, 0, 0, 255), 50);  // True white (not RGB white)
-    if (i == 0) {
-      Serial.printf("neopixelThread Usage (bytes) = %d\n", uxTaskGetStackHighWaterMark(NULL));
-    }
-    i++;
+    
   }
   vTaskDelete(NULL);
 }
 
-static CThread* initialize() {
-  thread.run = run;
-
-  Serial.printf_P(PSTR("Starting NeopixelThread...\n"));
-
+static CThread* initialize() {  
   strip.begin();            // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();             // Turn OFF all pixels ASAP
   strip.setBrightness(10);  // Set BRIGHTNESS to about 1/5 (max = 255)
 
-  return &thread;
+  thread.run = run;
+  return CThread_super(&thread, configMINIMAL_STACK_SIZE, "neopixelThread", tskIDLE_PRIORITY);
 }
 const struct neopixelThread NeopixelThread = {
     .initialize = initialize,

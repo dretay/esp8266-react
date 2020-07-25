@@ -3,6 +3,7 @@
 
 #include "CThread.h"
 #include <types.h>
+#include "../AnalogMux.h"
 
 #include<DFPlayerMini_Fast.h>
 
