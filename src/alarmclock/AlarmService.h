@@ -21,6 +21,7 @@
 #include "threads/Mp3Thread.h"
 #include "threads/NeopixelThread.h"
 #include "threads/VoiceThread.h"
+#include "threads/ClockThread.h"
 
 
 #include "AnalogMux.h"

@@ -17,7 +17,7 @@ extern QueueHandle_t MP3_QUEUE;
 extern QueueHandle_t keypadQueue;
 extern EventGroupHandle_t keypadEventGroup;
 
-static CThread *voiceThread, *mp3Thread, *neopixelThread, *buttonThread;
+static CThread *voiceThread, *mp3Thread, *neopixelThread, *buttonThread, *clockThread;
 
 static void toggleVoiceThread(void* param) {
   while (true) {
@@ -43,7 +43,8 @@ static void memoryWatchdog(void* param) {
     mp3Thread->memoryFree(mp3Thread);
     neopixelThread->memoryFree(neopixelThread);
     buttonThread->memoryFree(buttonThread);
-    Serial.println("=======================================");
+    clockThread->memoryFree(clockThread);
+    Serial.println("=======================================");     
   }
 }
 
@@ -51,10 +52,12 @@ void AlarmService::begin() {
   Serial.printf_P(PSTR("Begin()\n"));
   _fsPersistence.readFromFS();
 
-  voiceThread = VoiceThread.initialize();
-  mp3Thread = Mp3Thread.initialize();
-  neopixelThread = NeopixelThread.initialize();
-  buttonThread = ButtonThread.initialize();
+  voiceThread = VoiceThread.initialize(3);
+  mp3Thread = Mp3Thread.initialize(0);
+  neopixelThread = NeopixelThread.initialize(3);
+  buttonThread = ButtonThread.initialize(0);
+  clockThread = ClockThread.initialize(0);
+  
 
   xTaskCreate(toggleVoiceThread, "toggleVoiceThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
   xTaskCreate(toggleMp3Thread, "toggleMp3Thread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);

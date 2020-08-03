@@ -30,13 +30,13 @@ static void run(void* params) {
   vTaskDelete(NULL);
 }
 
-static CThread* initialize() {  
+static CThread* initialize(u8 priority) {  
   strip.begin();            // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();             // Turn OFF all pixels ASAP
   strip.setBrightness(10);  // Set BRIGHTNESS to about 1/5 (max = 255)
 
   thread.run = run;
-  return CThread_super(&thread, configMINIMAL_STACK_SIZE, "neopixelThread", tskIDLE_PRIORITY);
+  return CThread_super(&thread, configMINIMAL_STACK_SIZE, "neopixelThread", (tskIDLE_PRIORITY+priority));
 }
 const struct neopixelThread NeopixelThread = {
     .initialize = initialize,

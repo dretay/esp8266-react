@@ -5,7 +5,7 @@
 typedef struct CThread {
   // void(*stop)(void) //TODO: implement me!
   void (*run)(void* params);
-  float (*memoryFree)(CThread*);  // TODO: implement me
+  float (*memoryFree)(CThread*); 
   TaskHandle_t thread;
   uint32_t stack_allotment;
   char taskName[configMAX_TASK_NAME_LEN];
@@ -13,9 +13,7 @@ typedef struct CThread {
 } CThread;
 
 static float CThread_memoryFree(CThread* thread) {
-  //   TaskHandle_t task_handle,
-  //   uint32_t stack_allotment
-
+  
   UBaseType_t uxHighWaterMark;
   uint32_t diff;
   float result;

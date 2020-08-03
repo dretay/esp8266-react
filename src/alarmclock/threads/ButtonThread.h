@@ -25,7 +25,7 @@
 
 struct buttonThread
 {
-	CThread*(*initialize)(void);	
+	CThread*(*initialize)(u8 priority);	
 };
 
 extern const struct buttonThread ButtonThread;

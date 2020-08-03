@@ -9,7 +9,7 @@
 
 struct mp3Thread
 {
-	CThread*(*initialize)(void);	
+	CThread*(*initialize)(u8 priority);	
 };
 
 extern const struct mp3Thread Mp3Thread;
