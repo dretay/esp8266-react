@@ -244,7 +244,7 @@ static void run(void* params) {
   vTaskDelete(NULL);
 }
 
-static CThread* initialize() {  
+static CThread* initialize(u8 priority) {  
   // start threads
   VOICE_QUEUE = xQueueCreate(1, sizeof(int));
   if (VOICE_QUEUE == NULL) {
@@ -253,7 +253,7 @@ static CThread* initialize() {
   AnalogMux.initialize();
 
   thread.run = run;
-  return CThread_super(&thread, 2048, "voiceThread", (tskIDLE_PRIORITY+3));
+  return CThread_super(&thread, 2048, "voiceThread", (tskIDLE_PRIORITY+priority));
 }
 const struct voiceThread VoiceThread = {
     .initialize = initialize,

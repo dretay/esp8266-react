@@ -38,7 +38,7 @@ static void run(void* params) {
   vTaskDelete(NULL);
 }
 
-static CThread* initialize() {
+static CThread* initialize(u8 priority) {
   dfplayerUart = HardwareSerial(1);
   dfplayerUart.begin(9600, SERIAL_8N1, 16, 17);
   myMP3.begin(dfplayerUart);
@@ -51,7 +51,7 @@ static CThread* initialize() {
 
   AnalogMux.initialize();
   thread.run = run;
-  return CThread_super(&thread, 2048, "mp3Thread", (tskIDLE_PRIORITY));
+  return CThread_super(&thread, 2048, "mp3Thread", (tskIDLE_PRIORITY+priority));
 }
 const struct mp3Thread Mp3Thread = {
     .initialize = initialize,

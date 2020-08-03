@@ -4,10 +4,6 @@
 #include <alarmclock/AlarmService.h>
 #include <FS.h>
 
-#include "alarmclock/threads/VoiceThread.h"
-#include "alarmclock/threads/Mp3Thread.h"
-#include "alarmclock/threads/KeypadThread.h"
-#include "alarmclock/threads/NeopixelThread.h"
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -21,7 +17,6 @@ LightStateService lightStateService = LightStateService(&server,
                                                         &lightMqttSettingsService);
 AlarmService alarmService = AlarmService(&server, &SPIFFS, esp8266React.getSecurityManager());
 HardwareSerial dfplayerUart(1);
-QueueHandle_t VOICE_QUEUE,MP3_QUEUE;
 
 float GetTaskHighWaterMarkPercent(TaskHandle_t task_handle, uint32_t stack_allotment) {
   UBaseType_t uxHighWaterMark;
@@ -36,19 +31,10 @@ float GetTaskHighWaterMarkPercent(TaskHandle_t task_handle, uint32_t stack_allot
 
   return result;
 }
-// KeypadThread keypadThread;
-// static uint keypadStackSize = 50000;
 
-// VoiceThread voiceThread;
-// static uint voiceStackSize = 1000;
-
-// Mp3Thread mp3Thread;
-// static uint mp3StackSize = 10000;
-
-// NeopixelThread neopixelThread;
-// static uint neopixelStackSize = 1024;
-static CThread *voiceThread, *mp3Thread, *neopixelThread;
 void setup() {
+
+  
   // start serial and filesystem
   Serial.begin(SERIAL_BAUD_RATE);
 
@@ -58,19 +44,7 @@ void setup() {
 #elif defined(ESP8266)
   SPIFFS.begin();
 #endif
-  // start threads
-  VOICE_QUEUE = xQueueCreate(10, sizeof(int));
-  if (VOICE_QUEUE == NULL) {
-    Serial.printf_P(PSTR("Error creating the queue"));
-  }
-  MP3_QUEUE = xQueueCreate(10, sizeof(int));
-  if (MP3_QUEUE == NULL) {
-    Serial.printf_P(PSTR("Error creating the queue"));
-  }
-  voiceThread = VoiceThread.initialize();
-  mp3Thread = Mp3Thread.initialize();
-  neopixelThread = NeopixelThread.initialize();
-
+ 
   // start the framework and demo project
   esp8266React.begin();
 
@@ -83,28 +57,17 @@ void setup() {
   // start the light service
   lightMqttSettingsService.begin();
 
-
   // start the server
   server.begin();
 }
 
 void loop() {
-  // VoiceThread voiceThread{50000, 1, "voiceThread"};
-  // Mp3Thread mp3Thread{10000, 1, "mp3Thread"};
-  // NeopixelThread neopixelThread{1024, 1, "neopixelThread"};
   
-  // voiceThread Usage (bytes) = 3288
-  xTaskCreate(voiceThread->run, "voiceThread", 5000, NULL, (tskIDLE_PRIORITY + 3), NULL);
   
-  // Mp3Thread Usage (bytes) = 3620
-  xTaskCreate(mp3Thread->run, "mp3Thread", 5000, NULL, (tskIDLE_PRIORITY), NULL);
-  
-  // neopixelThread Usage (bytes) = 3628
-  xTaskCreate(neopixelThread->run, "neopixelThread", 5000, NULL, (tskIDLE_PRIORITY), NULL);
-
   for (;;) {
     esp8266React.loop();
     alarmService.loop();
+    
   }
   // run the framework's loop function
 

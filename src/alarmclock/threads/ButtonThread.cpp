@@ -76,7 +76,7 @@ static void run(void* params) {
   vTaskDelete(NULL);
 }
 
-static CThread* initialize() {
+static CThread* initialize(u8 priority) {
   uart_config_t UART_CONFIG = {.baud_rate = 4800,
                                .data_bits = UART_DATA_8_BITS,
                                .parity = UART_PARITY_DISABLE,
@@ -94,7 +94,7 @@ static CThread* initialize() {
   keypadQueue = xQueueCreate(1, sizeof(uint32_t));
 
   thread.run = run;
-  return CThread_super(&thread, 2048, "buttonThread", (tskIDLE_PRIORITY));
+  return CThread_super(&thread, 2048, "buttonThread", (tskIDLE_PRIORITY+priority));
 }
 const struct buttonThread ButtonThread = {
     .initialize = initialize,
