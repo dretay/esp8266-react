@@ -21,7 +21,11 @@
     "compression-webpack-plugin": "^3.0.1",
     "date-fns": "^2.14.0",
     "jwt-decode": "^2.2.0",
+<<<<<<< HEAD
     "lodash": "^4.17.19",
+=======
+    "lodash": "^4.17.15",
+>>>>>>> master
     "material-table": "^1.59.0",
     "mime-types": "^2.1.25",
     "moment": "^2.26.0",
