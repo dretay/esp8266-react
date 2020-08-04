@@ -1,0 +1,12 @@
+{
+    "name" : "ugfx-config-uc1698",
+    "version": "0.1",
+    "build": {
+        "srcDir" : "src",
+        "srcFilter" : [
+            "+<*.c>",
+            "+<*.h>"
+        ]
+    }
+
+}
